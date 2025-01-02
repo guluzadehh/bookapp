@@ -1,8 +1,10 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -12,6 +14,7 @@ type Config struct {
 	Env        string     `yaml:"env" env-required:"true"`
 	HTTPServer HTTPServer `yaml:"http_server"`
 	GRPCServer GRPCServer `yaml:"grpc_server"`
+	Postgres   Postgres   `yaml:"postgres"`
 }
 
 type HTTPServer struct {
@@ -22,6 +25,24 @@ type HTTPServer struct {
 
 type GRPCServer struct {
 	Port int `yaml:"port" env-default:"50000"`
+}
+
+type Postgres struct {
+	Url     string   `yaml:"-" env:"POSTGRES_URL" env-required:"true"`
+	Options []string `yaml:"options"`
+}
+
+func (db *Postgres) DSN(options []string) string {
+	if options == nil {
+		options = db.Options
+	}
+
+	opts := strings.Join(options, "&")
+	if len(opts) == 0 {
+		return db.Url
+	}
+
+	return fmt.Sprintf("%s?%s", db.Url, opts)
 }
 
 func MustLoad() *Config {

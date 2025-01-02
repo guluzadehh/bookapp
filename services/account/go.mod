@@ -12,6 +12,7 @@ require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/guluzadehh/bookapp v0.0.0-20241230221127-8b9710b5f8e9 // indirect
 	github.com/guluzadehh/bookapp/pkg v0.0.0-20250102185552-6d790afb32ae // indirect
+	github.com/lib/pq v1.10.9
 	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
