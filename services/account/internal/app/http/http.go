@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/guluzadehh/bookapp/services/account/internal/config"
+	accounthttp "github.com/guluzadehh/bookapp/services/account/internal/http/handlers/account"
 )
 
 type HttpApp struct {
@@ -18,6 +19,7 @@ type HttpApp struct {
 func New(
 	log *slog.Logger,
 	config *config.Config,
+	accountService accounthttp.AccountService,
 ) *HttpApp {
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.HTTPServer.Port),
@@ -25,6 +27,8 @@ func New(
 		WriteTimeout: config.HTTPServer.Timeout,
 		IdleTimeout:  config.HTTPServer.IdleTimeout,
 	}
+
+	_ = accounthttp.New(log, accountService)
 
 	return &HttpApp{
 		log:        log,
