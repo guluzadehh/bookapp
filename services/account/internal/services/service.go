@@ -1,6 +1,13 @@
 package services
 
-import "log/slog"
+import (
+	"errors"
+	"log/slog"
+)
+
+var (
+	ErrEmailExists = errors.New("email is already taken")
+)
 
 type Service struct {
 	Log *slog.Logger

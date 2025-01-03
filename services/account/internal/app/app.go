@@ -25,7 +25,7 @@ func New(log *slog.Logger, config *config.Config) *App {
 		panic(err)
 	}
 
-	accountService := account.New(log, config)
+	accountService := account.New(log, config, pgStorage)
 
 	httpApp := httpapp.New(log, config, accountService)
 	grpcApp := grpcapp.New(log, config)
