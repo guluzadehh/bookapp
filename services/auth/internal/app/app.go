@@ -7,6 +7,7 @@ import (
 	grpcapp "github.com/guluzadehh/bookapp/services/auth/internal/app/grpc"
 	httpapp "github.com/guluzadehh/bookapp/services/auth/internal/app/http"
 	"github.com/guluzadehh/bookapp/services/auth/internal/config"
+	"github.com/guluzadehh/bookapp/services/auth/internal/services/user"
 	"github.com/guluzadehh/bookapp/services/auth/internal/storage/postgres"
 )
 
@@ -24,7 +25,9 @@ func New(log *slog.Logger, config *config.Config) *App {
 		panic(err)
 	}
 
-	httpApp := httpapp.New(log, config)
+	userService := user.New(log, config)
+
+	httpApp := httpapp.New(log, config, userService)
 	grpcApp := grpcapp.New(log, config)
 
 	return &App{

@@ -8,11 +8,18 @@ require (
 	google.golang.org/grpc v1.69.2
 )
 
+require github.com/guluzadehh/bookapp/pkg v0.0.0-20250107221727-0a5970ef8e2d
+
+require (
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator v9.31.0+incompatible // indirect
+	github.com/leodido/go-urn v1.4.0 // indirect
+)
+
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/gorilla/mux v1.8.1
-	github.com/guluzadehh/bookapp v0.0.0-20241230221127-8b9710b5f8e9 // indirect
-	github.com/guluzadehh/bookapp/pkg v0.0.0-20250105191626-46a23f9c677d // indirect
 	github.com/lib/pq v1.10.9
 	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect

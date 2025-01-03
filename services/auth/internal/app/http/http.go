@@ -8,8 +8,9 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	loggingmdw "github.com/guluzadehh/bookapp/pkg/http/middlewares"
+	"github.com/guluzadehh/bookapp/pkg/http/middlewares/loggingmdw"
 	"github.com/guluzadehh/bookapp/services/auth/internal/config"
+	userhttp "github.com/guluzadehh/bookapp/services/auth/internal/http/handlers/user"
 )
 
 type HttpApp struct {
@@ -20,6 +21,7 @@ type HttpApp struct {
 func New(
 	log *slog.Logger,
 	config *config.Config,
+	userService userhttp.UserService,
 ) *HttpApp {
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.HTTPServer.Port),
@@ -29,7 +31,9 @@ func New(
 	}
 
 	router := mux.NewRouter()
-	router.Use(loggingmdw.LogRequests(log))
+	router.Use(loggingmdw.Middleware(log))
+
+	_ = userhttp.New(log, userService)
 
 	server.Handler = router
 
