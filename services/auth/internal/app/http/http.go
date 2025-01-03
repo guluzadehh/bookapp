@@ -7,6 +7,8 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/gorilla/mux"
+	loggingmdw "github.com/guluzadehh/bookapp/pkg/http/middlewares"
 	"github.com/guluzadehh/bookapp/services/auth/internal/config"
 )
 
@@ -25,6 +27,11 @@ func New(
 		WriteTimeout: config.HTTPServer.Timeout,
 		IdleTimeout:  config.HTTPServer.IdleTimeout,
 	}
+
+	router := mux.NewRouter()
+	router.Use(loggingmdw.LogRequests(log))
+
+	server.Handler = router
 
 	return &HttpApp{
 		log:        log,
