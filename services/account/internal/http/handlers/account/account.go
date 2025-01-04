@@ -1,12 +1,15 @@
 package accounthttp
 
 import (
+	"context"
 	"log/slog"
 
+	"github.com/guluzadehh/bookapp/services/account/internal/domain/models"
 	httpbase "github.com/guluzadehh/bookapp/services/account/internal/http/base"
 )
 
 type AccountService interface {
+	InitAccount(ctx context.Context, email, password string) (*models.User, error)
 	SetLog(log *slog.Logger)
 }
 

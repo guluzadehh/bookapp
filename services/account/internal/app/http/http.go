@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/guluzadehh/bookapp/services/account/internal/config"
 	accounthttp "github.com/guluzadehh/bookapp/services/account/internal/http/handlers/account"
 )
@@ -28,7 +29,16 @@ func New(
 		IdleTimeout:  config.HTTPServer.IdleTimeout,
 	}
 
-	_ = accounthttp.New(log, accountService)
+	accountHandler := accounthttp.New(log, accountService)
+
+	router := mux.NewRouter()
+
+	api := router.PathPrefix("/api").Subrouter()
+
+	account := api.PathPrefix("/account").Subrouter()
+	account.HandleFunc("/signup", accountHandler.Signup).Methods("POST")
+
+	server.Handler = router
 
 	return &HttpApp{
 		log:        log,
