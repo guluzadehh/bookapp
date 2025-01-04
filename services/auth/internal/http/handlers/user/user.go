@@ -1,12 +1,16 @@
 package userhttp
 
 import (
+	"context"
 	"log/slog"
 
+	"github.com/guluzadehh/bookapp/services/auth/internal/domain/models"
 	httpbase "github.com/guluzadehh/bookapp/services/auth/internal/http/base"
 )
 
-type UserService interface{}
+type UserService interface {
+	CreateUser(ctx context.Context, email, password string) (*models.User, error)
+}
 
 type UserHandler struct {
 	*httpbase.Handler

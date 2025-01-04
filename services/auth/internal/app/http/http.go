@@ -30,10 +30,15 @@ func New(
 		IdleTimeout:  config.HTTPServer.IdleTimeout,
 	}
 
+	userHandler := userhttp.New(log, userService)
+
 	router := mux.NewRouter()
 	router.Use(loggingmdw.Middleware(log))
 
-	_ = userhttp.New(log, userService)
+	api := router.PathPrefix("/api").Subrouter()
+
+	auth := api.PathPrefix("/auth").Subrouter()
+	auth.HandleFunc("/signup", userHandler.Signup).Methods("POST")
 
 	server.Handler = router
 

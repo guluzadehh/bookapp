@@ -3,6 +3,8 @@ module github.com/guluzadehh/bookapp/services/auth
 go 1.22.4
 
 require (
+	github.com/go-playground/validator v9.31.0+incompatible
+	github.com/gorilla/mux v1.8.1
 	github.com/guluzadehh/bookapp/pkg v0.0.0-20250108000627-10b5e1c6525f
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/joho/godotenv v1.5.1
@@ -10,8 +12,14 @@ require (
 )
 
 require (
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/leodido/go-urn v1.4.0 // indirect
+	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
+)
+
+require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
-	github.com/gorilla/mux v1.8.1
 	github.com/lib/pq v1.10.9
 	golang.org/x/crypto v0.31.0
 	golang.org/x/net v0.30.0 // indirect
