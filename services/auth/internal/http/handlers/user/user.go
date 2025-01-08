@@ -9,7 +9,7 @@ import (
 )
 
 type UserService interface {
-	CreateUser(ctx context.Context, email, password string) (*models.User, error)
+	Signup(ctx context.Context, email, password string) (*models.User, error)
 }
 
 type UserHandler struct {
