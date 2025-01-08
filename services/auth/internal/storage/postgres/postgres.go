@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/guluzadehh/bookapp/services/auth/internal/domain/models"
@@ -67,4 +68,60 @@ func (s *Storage) CreateUser(ctx context.Context, email, password string) (*mode
 	user.Password = []byte(p)
 
 	return &user, nil
+}
+
+func (s *Storage) GetRoleById(ctx context.Context, roleId int64) (*models.Role, error) {
+	const op = "storage.postgres.GetRoleByName"
+
+	const query = `
+		SELECT id, name, created_at, updated_at
+		FROM roles
+		WHERE id = $1; 
+	`
+
+	var role models.Role
+
+	err := s.db.QueryRowContext(ctx, query, roleId).Scan(
+		&role.Id,
+		&role.Name,
+		&role.CreatedAt,
+		&role.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, storage.RoleNotFound
+		}
+
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &role, nil
+}
+
+func (s *Storage) GetRoleByName(ctx context.Context, name string) (*models.Role, error) {
+	const op = "storage.postgres.GetRoleByName"
+
+	const query = `
+		SELECT id, name, created_at, updated_at
+		FROM roles
+		WHERE name = $1; 
+	`
+
+	var role models.Role
+
+	err := s.db.QueryRowContext(ctx, query, name).Scan(
+		&role.Id,
+		&role.Name,
+		&role.CreatedAt,
+		&role.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, storage.RoleNotFound
+		}
+
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &role, nil
 }
