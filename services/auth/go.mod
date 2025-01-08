@@ -20,6 +20,7 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/lib/pq v1.10.9
 	golang.org/x/crypto v0.31.0
 	golang.org/x/net v0.30.0 // indirect
