@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/guluzadehh/bookapp/pkg/http/middlewares/loggingmdw"
 	"github.com/guluzadehh/bookapp/services/auth/internal/config"
+	authhttp "github.com/guluzadehh/bookapp/services/auth/internal/http/handlers/auth"
 	userhttp "github.com/guluzadehh/bookapp/services/auth/internal/http/handlers/user"
 )
 
@@ -22,6 +23,7 @@ func New(
 	log *slog.Logger,
 	config *config.Config,
 	userService userhttp.UserService,
+	authService authhttp.AuthService,
 ) *HttpApp {
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.HTTPServer.Port),
@@ -31,6 +33,7 @@ func New(
 	}
 
 	userHandler := userhttp.New(log, userService)
+	_ = authhttp.New(log, authService)
 
 	router := mux.NewRouter()
 	router.Use(loggingmdw.Middleware(log))
