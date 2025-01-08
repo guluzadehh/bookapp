@@ -33,7 +33,7 @@ func New(
 	}
 
 	userHandler := userhttp.New(log, userService)
-	_ = authhttp.New(log, authService)
+	authHandler := authhttp.New(log, config, authService)
 
 	router := mux.NewRouter()
 	router.Use(loggingmdw.Middleware(log))
@@ -42,6 +42,7 @@ func New(
 
 	auth := api.PathPrefix("/auth").Subrouter()
 	auth.HandleFunc("/signup", userHandler.Signup).Methods("POST")
+	auth.HandleFunc("/login", authHandler.Authenticate).Methods("POST")
 
 	server.Handler = router
 
