@@ -57,7 +57,7 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.srvc.CreateUser(r.Context(), req.Email, req.Password)
+	user, err := h.srvc.Signup(r.Context(), req.Email, req.Password)
 	if err != nil {
 		if errors.Is(err, services.ErrEmailExists) {
 			h.JSON(w, http.StatusConflict, api.ErrD(

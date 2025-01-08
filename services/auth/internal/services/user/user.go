@@ -16,32 +16,64 @@ import (
 )
 
 type UserSaver interface {
-	CreateUser(ctx context.Context, email, password string) (*models.User, error)
+	CreateUser(ctx context.Context, email, password string, roleId int64) (*models.User, error)
+}
+
+type RoleProvider interface {
+	GetRoleByName(ctx context.Context, name string) (*models.Role, error)
 }
 
 type UserService struct {
 	*services.Service
-	config    *config.Config
-	userSaver UserSaver
+	config       *config.Config
+	userSaver    UserSaver
+	roleProvider RoleProvider
 }
 
 func New(
 	log *slog.Logger,
 	config *config.Config,
 	userSaver UserSaver,
+	roleProvider RoleProvider,
 ) *UserService {
 	return &UserService{
-		Service:   services.New(log),
-		config:    config,
-		userSaver: userSaver,
+		Service:      services.New(log),
+		config:       config,
+		userSaver:    userSaver,
+		roleProvider: roleProvider,
 	}
 }
 
-func (s *UserService) CreateUser(
+func (s *UserService) Signup(
 	ctx context.Context,
 	email, password string,
 ) (*models.User, error) {
-	const op = "services.user.CreateUser"
+	const op = "services.user.Signup"
+
+	log := s.Log.With(slog.String("op", op))
+
+	userRole, err := s.roleProvider.GetRoleByName(ctx, "user")
+	if err != nil {
+		log.Error("failed to get the user role", sl.Err(err))
+		return nil, services.ErrRoleNotFound
+	}
+
+	user, err := s.createUser(ctx, email, password, userRole.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Role = userRole
+
+	return user, nil
+}
+
+func (s *UserService) createUser(
+	ctx context.Context,
+	email, password string,
+	roleId int64,
+) (*models.User, error) {
+	const op = "services.user.createUser"
 
 	log := sl.Init(s.Log, op, requestidmdw.GetId(ctx))
 
@@ -56,11 +88,16 @@ func (s *UserService) CreateUser(
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	user, err := s.userSaver.CreateUser(ctx, email, string(bytes))
+	user, err := s.userSaver.CreateUser(ctx, email, string(bytes), roleId)
 	if err != nil {
 		if errors.Is(err, storage.UserExists) {
 			log.Info("email is taken")
 			return nil, services.ErrEmailExists
+		}
+
+		if errors.Is(err, storage.RoleNotFound) {
+			log.Error("role doesn't exist", sl.Err(err))
+			return nil, services.ErrRoleNotFound
 		}
 
 		log.Error("couldn't save the user", sl.Err(err))
