@@ -77,6 +77,37 @@ func (s *Storage) CreateUser(ctx context.Context, email, password string, roleId
 	return &user, nil
 }
 
+func (s *Storage) UserByEmail(ctx context.Context, email string) (*models.User, error) {
+	const op = "storage.postgres.UserByEmail"
+
+	const query = `
+		SELECT id, email, password, role_id, created_at, updated_at, is_active 
+		FROM users
+		WHERE email = $1 AND is_active = true;
+	`
+
+	var user models.User
+
+	err := s.db.QueryRowContext(ctx, query, email).Scan(
+		&user.Id,
+		&user.Email,
+		&user.Password,
+		&user.RoleId,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&user.IsActive,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, storage.UserNotFound
+		}
+
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &user, nil
+}
+
 func (s *Storage) GetRoleById(ctx context.Context, roleId int64) (*models.Role, error) {
 	const op = "storage.postgres.GetRoleByName"
 
