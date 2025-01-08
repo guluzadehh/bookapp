@@ -6,8 +6,9 @@ import (
 )
 
 var (
-	ErrEmailExists  = errors.New("email is already taken")
-	ErrRoleNotFound = errors.New("role doesn't exist")
+	ErrEmailExists        = errors.New("email is already taken")
+	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrRoleNotFound       = errors.New("role doesn't exist")
 )
 
 type Service struct {
