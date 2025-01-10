@@ -10,6 +10,7 @@ import (
 	"github.com/guluzadehh/bookapp/services/auth/internal/services/auth"
 	"github.com/guluzadehh/bookapp/services/auth/internal/services/user"
 	"github.com/guluzadehh/bookapp/services/auth/internal/storage/postgres"
+	"github.com/guluzadehh/bookapp/services/auth/internal/storage/redis"
 )
 
 type App struct {
@@ -22,6 +23,12 @@ type App struct {
 func New(log *slog.Logger, config *config.Config) *App {
 	log.Info("connecting to postgres")
 	pgStorage, err := postgres.New(config.Postgres.DSN(config.Postgres.Options))
+	if err != nil {
+		panic(err)
+	}
+
+	log.Info("connecting to redis")
+	_, err = redis.New(config)
 	if err != nil {
 		panic(err)
 	}

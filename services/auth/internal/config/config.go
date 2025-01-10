@@ -15,6 +15,7 @@ type Config struct {
 	HTTPServer HTTPServer `yaml:"http_server"`
 	GRPCServer GRPCServer `yaml:"grpc_server"`
 	Postgres   Postgres   `yaml:"postgres"`
+	Redis      Redis      `yaml:"redis"`
 	JWT        JWT        `yaml:"jwt"`
 }
 
@@ -44,6 +45,12 @@ func (db *Postgres) DSN(options []string) string {
 	}
 
 	return fmt.Sprintf("%s?%s", db.Url, opts)
+}
+
+type Redis struct {
+	Address   string `yaml:"-" env:"REDIS_URL" env-default:"localhost:6379"`
+	Password  string `yaml:"-" env:"REDIS_PASSWORD" env-required:"true"`
+	DefaultDB int    `yaml:"-" env:"REDIS_DB" env-required:"true"`
 }
 
 type JWT struct {
