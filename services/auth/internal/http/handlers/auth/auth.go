@@ -6,10 +6,12 @@ import (
 
 	"github.com/guluzadehh/bookapp/services/auth/internal/config"
 	httpbase "github.com/guluzadehh/bookapp/services/auth/internal/http/base"
+	"github.com/guluzadehh/bookapp/services/auth/internal/lib/jwt"
 )
 
 type AuthService interface {
 	Authenticate(ctx context.Context, email, password string) (access string, refresh string, err error)
+	VerifyToken(ctx context.Context, token string) (*jwt.AuthClaims, error)
 }
 
 type AuthHandler struct {
