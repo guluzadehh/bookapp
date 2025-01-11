@@ -28,13 +28,13 @@ func New(log *slog.Logger, config *config.Config) *App {
 	}
 
 	log.Info("connecting to redis")
-	_, err = redis.New(config)
+	redisStorage, err := redis.New(config)
 	if err != nil {
 		panic(err)
 	}
 
 	userService := user.New(log, config, pgStorage, pgStorage)
-	authService := auth.New(log, config, pgStorage, pgStorage)
+	authService := auth.New(log, config, pgStorage, pgStorage, redisStorage)
 
 	httpApp := httpapp.New(log, config, userService, authService)
 	grpcApp := grpcapp.New(log, config)

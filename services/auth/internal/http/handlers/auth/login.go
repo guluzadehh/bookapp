@@ -3,6 +3,7 @@ package authhttp
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/guluzadehh/bookapp/pkg/http/api"
 	"github.com/guluzadehh/bookapp/pkg/http/middlewares/requestidmdw"
@@ -29,6 +30,24 @@ func (h *AuthHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
 	const op = "handlers.auth.Authenticate"
 
 	log := sl.Init(h.Log, op, requestidmdw.GetId(r.Context()))
+
+	cookie, err := r.Cookie(h.config.JWT.Refresh.CookieName)
+	if err == nil {
+		if _, err := h.srvc.VerifyToken(r.Context(), cookie.Value); err == nil {
+			log.Info("authorized login request")
+			h.JSON(w, http.StatusConflict, api.Err("you're authorized"))
+			return
+		}
+	}
+
+	if authHeader := r.Header.Get("Authorization"); strings.HasPrefix(authHeader, "Bearer ") {
+		access := strings.TrimPrefix(authHeader, "Bearer ")
+		if _, err := h.srvc.VerifyToken(r.Context(), access); err == nil {
+			log.Info("authorized login request")
+			h.JSON(w, http.StatusConflict, api.Err("you're authorized"))
+			return
+		}
+	}
 
 	var req AuthenticateReq
 	if err := render.DecodeJSON(r.Body, &req); err != nil {
