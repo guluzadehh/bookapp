@@ -45,6 +45,7 @@ func New(
 	auth := api.PathPrefix("/auth").Subrouter()
 	auth.HandleFunc("/signup", userHandler.Signup).Methods("POST")
 	auth.HandleFunc("/login", authHandler.Authenticate).Methods("POST")
+	auth.HandleFunc("/refresh", authHandler.Refresh).Methods("POST")
 
 	server.Handler = router
 
