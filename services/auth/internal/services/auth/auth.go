@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/guluzadehh/bookapp/services/auth/internal/config"
 	"github.com/guluzadehh/bookapp/services/auth/internal/domain/models"
@@ -18,6 +19,7 @@ type RoleProvider interface {
 }
 
 type TokenBlacklist interface {
+	BlacklistToken(ctx context.Context, token string, expiry time.Duration) error
 	TokenInBlacklist(ctx context.Context, token string) (bool, error)
 	UserInBlacklist(ctx context.Context, email string) (bool, error)
 	RoleInBlacklist(ctx context.Context, role string) (bool, error)
