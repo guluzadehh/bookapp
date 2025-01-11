@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/guluzadehh/bookapp/pkg/http/middlewares/loggingmdw"
+	"github.com/guluzadehh/bookapp/pkg/http/middlewares/requestidmdw"
 	"github.com/guluzadehh/bookapp/services/auth/internal/config"
 	authhttp "github.com/guluzadehh/bookapp/services/auth/internal/http/handlers/auth"
 	userhttp "github.com/guluzadehh/bookapp/services/auth/internal/http/handlers/user"
@@ -37,6 +38,7 @@ func New(
 
 	router := mux.NewRouter()
 	router.Use(loggingmdw.Middleware(log))
+	router.Use(requestidmdw.Middleware)
 
 	api := router.PathPrefix("/api").Subrouter()
 
