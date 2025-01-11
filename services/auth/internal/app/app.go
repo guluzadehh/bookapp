@@ -7,8 +7,10 @@ import (
 	grpcapp "github.com/guluzadehh/bookapp/services/auth/internal/app/grpc"
 	httpapp "github.com/guluzadehh/bookapp/services/auth/internal/app/http"
 	"github.com/guluzadehh/bookapp/services/auth/internal/config"
+	"github.com/guluzadehh/bookapp/services/auth/internal/services/auth"
 	"github.com/guluzadehh/bookapp/services/auth/internal/services/user"
 	"github.com/guluzadehh/bookapp/services/auth/internal/storage/postgres"
+	"github.com/guluzadehh/bookapp/services/auth/internal/storage/redis"
 )
 
 type App struct {
@@ -25,9 +27,16 @@ func New(log *slog.Logger, config *config.Config) *App {
 		panic(err)
 	}
 
-	userService := user.New(log, config, pgStorage)
+	log.Info("connecting to redis")
+	redisStorage, err := redis.New(config)
+	if err != nil {
+		panic(err)
+	}
 
-	httpApp := httpapp.New(log, config, userService)
+	userService := user.New(log, config, pgStorage, pgStorage)
+	authService := auth.New(log, config, pgStorage, pgStorage, redisStorage)
+
+	httpApp := httpapp.New(log, config, userService, authService)
 	grpcApp := grpcapp.New(log, config)
 
 	return &App{
