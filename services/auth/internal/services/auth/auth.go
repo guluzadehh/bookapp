@@ -17,11 +17,18 @@ type RoleProvider interface {
 	GetRoleById(ctx context.Context, id int64) (*models.Role, error)
 }
 
+type TokenBlacklist interface {
+	TokenInBlacklist(ctx context.Context, token string) (bool, error)
+	UserInBlacklist(ctx context.Context, email string) (bool, error)
+	RoleInBlacklist(ctx context.Context, role string) (bool, error)
+}
+
 type AuthService struct {
 	*services.Service
-	config       *config.Config
-	userProvider UserProvider
-	roleProvider RoleProvider
+	config         *config.Config
+	userProvider   UserProvider
+	roleProvider   RoleProvider
+	tokenBlacklist TokenBlacklist
 }
 
 func New(
@@ -29,11 +36,13 @@ func New(
 	config *config.Config,
 	userProvider UserProvider,
 	roleProvider RoleProvider,
+	tokenBlacklist TokenBlacklist,
 ) *AuthService {
 	return &AuthService{
-		Service:      services.New(log),
-		config:       config,
-		userProvider: userProvider,
-		roleProvider: roleProvider,
+		Service:        services.New(log),
+		config:         config,
+		userProvider:   userProvider,
+		roleProvider:   roleProvider,
+		tokenBlacklist: tokenBlacklist,
 	}
 }
