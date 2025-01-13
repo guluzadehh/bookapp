@@ -53,6 +53,7 @@ func New(
 	protectedAuth := auth.NewRoute().Subrouter()
 	protectedAuth.Use(authmdw.Authorize(log, config, authMdwAuthService, authMdwUserService))
 
+	protectedAuth.HandleFunc("/logout", authHandler.Logout).Methods("POST")
 
 	server.Handler = router
 

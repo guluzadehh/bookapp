@@ -13,6 +13,7 @@ type AuthService interface {
 	Authenticate(ctx context.Context, email, password string) (access string, refresh string, err error)
 	VerifyToken(ctx context.Context, token string) (*jwt.AuthClaims, error)
 	RefreshToken(ctx context.Context, refresh string, oldAccess string) (access string, err error)
+	Logout(ctx context.Context, access, refresh string)
 }
 
 type AuthHandler struct {
