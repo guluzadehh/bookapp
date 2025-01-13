@@ -15,7 +15,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserSaver interface {
+type UserStorage interface {
+	UserByEmailWithRole(ctx context.Context, email string) (*models.User, error)
 	CreateUser(ctx context.Context, email, password string, roleId int64) (*models.User, error)
 }
 
@@ -26,22 +27,44 @@ type RoleProvider interface {
 type UserService struct {
 	*services.Service
 	config       *config.Config
-	userSaver    UserSaver
+	userStorage  UserStorage
 	roleProvider RoleProvider
 }
 
 func New(
 	log *slog.Logger,
 	config *config.Config,
-	userSaver UserSaver,
+	userStorage UserStorage,
 	roleProvider RoleProvider,
 ) *UserService {
 	return &UserService{
 		Service:      services.New(log),
 		config:       config,
-		userSaver:    userSaver,
+		userStorage:  userStorage,
 		roleProvider: roleProvider,
 	}
+}
+
+func (s *UserService) GetUserByEmail(
+	ctx context.Context,
+	email string,
+) (*models.User, error) {
+	const op = "services.user.GetUserByEmail"
+
+	log := sl.Init(s.Log, op, requestidmdw.GetId(ctx))
+
+	user, err := s.userStorage.UserByEmailWithRole(ctx, email)
+	if err != nil {
+		if errors.Is(err, storage.UserNotFound) {
+			log.Info("user doesn't exist")
+			return nil, fmt.Errorf("%s: %w", op, services.ErrUserNotFound)
+		}
+
+		log.Error("failed to get user from storage", sl.Err(err))
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return user, nil
 }
 
 func (s *UserService) Signup(
@@ -88,7 +111,7 @@ func (s *UserService) createUser(
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	user, err := s.userSaver.CreateUser(ctx, email, string(bytes), roleId)
+	user, err := s.userStorage.CreateUser(ctx, email, string(bytes), roleId)
 	if err != nil {
 		if errors.Is(err, storage.UserExists) {
 			log.Info("email is taken")
