@@ -13,6 +13,7 @@ import (
 	"github.com/guluzadehh/bookapp/services/auth/internal/config"
 	authhttp "github.com/guluzadehh/bookapp/services/auth/internal/http/handlers/auth"
 	userhttp "github.com/guluzadehh/bookapp/services/auth/internal/http/handlers/user"
+	"github.com/guluzadehh/bookapp/services/auth/internal/http/middlewares/authmdw"
 )
 
 type HttpApp struct {
@@ -25,6 +26,8 @@ func New(
 	config *config.Config,
 	userService userhttp.UserService,
 	authService authhttp.AuthService,
+	authMdwAuthService authhttp.AuthService,
+	authMdwUserService authmdw.UserService,
 ) *HttpApp {
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.HTTPServer.Port),
@@ -46,6 +49,10 @@ func New(
 	auth.HandleFunc("/signup", userHandler.Signup).Methods("POST")
 	auth.HandleFunc("/login", authHandler.Authenticate).Methods("POST")
 	auth.HandleFunc("/refresh", authHandler.Refresh).Methods("POST")
+
+	protectedAuth := auth.NewRoute().Subrouter()
+	protectedAuth.Use(authmdw.Authorize(log, config, authMdwAuthService, authMdwUserService))
+
 
 	server.Handler = router
 

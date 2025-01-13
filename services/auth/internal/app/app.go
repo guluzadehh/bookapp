@@ -36,7 +36,7 @@ func New(log *slog.Logger, config *config.Config) *App {
 	userService := user.New(log, config, pgStorage, pgStorage)
 	authService := auth.New(log, config, pgStorage, pgStorage, redisStorage)
 
-	httpApp := httpapp.New(log, config, userService, authService)
+	httpApp := httpapp.New(log, config, userService, authService, authService, userService)
 	grpcApp := grpcapp.New(log, config)
 
 	return &App{
