@@ -45,52 +45,6 @@ func New(
 	}
 }
 
-func (s *UserService) GetUserByEmail(
-	ctx context.Context,
-	email string,
-) (*models.User, error) {
-	const op = "services.user.GetUserByEmail"
-
-	log := sl.Init(s.Log, op, requestidmdw.GetId(ctx))
-
-	user, err := s.userStorage.UserByEmailWithRole(ctx, email)
-	if err != nil {
-		if errors.Is(err, storage.UserNotFound) {
-			log.Info("user doesn't exist")
-			return nil, fmt.Errorf("%s: %w", op, services.ErrUserNotFound)
-		}
-
-		log.Error("failed to get user from storage", sl.Err(err))
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-
-	return user, nil
-}
-
-func (s *UserService) Signup(
-	ctx context.Context,
-	email, password string,
-) (*models.User, error) {
-	const op = "services.user.Signup"
-
-	log := s.Log.With(slog.String("op", op))
-
-	userRole, err := s.roleProvider.GetRoleByName(ctx, "user")
-	if err != nil {
-		log.Error("failed to get the user role", sl.Err(err))
-		return nil, services.ErrRoleNotFound
-	}
-
-	user, err := s.createUser(ctx, email, password, userRole.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	user.Role = userRole
-
-	return user, nil
-}
-
 func (s *UserService) createUser(
 	ctx context.Context,
 	email, password string,
