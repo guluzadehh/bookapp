@@ -54,6 +54,7 @@ func New(
 	protectedAuth.Use(authmdw.Authorize(log, config, authMdwAuthService, authMdwUserService))
 
 	protectedAuth.HandleFunc("/logout", authHandler.Logout).Methods("POST")
+	protectedAuth.HandleFunc("/delete", userHandler.Delete).Methods("DELETE")
 
 	server.Handler = router
 

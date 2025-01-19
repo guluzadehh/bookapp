@@ -10,6 +10,7 @@ import (
 
 type UserService interface {
 	Signup(ctx context.Context, email, password string) (*models.User, error)
+	Delete(ctx context.Context, email string) error
 }
 
 type UserHandler struct {
