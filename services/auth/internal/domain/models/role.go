@@ -8,3 +8,11 @@ type Role struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
+
+func (r *Role) IsAdmin() bool {
+	return r.Name == "admin"
+}
+
+func (r *Role) IsUser() bool {
+	return r.Name == "user"
+}
