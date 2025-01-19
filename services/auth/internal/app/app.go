@@ -33,7 +33,7 @@ func New(log *slog.Logger, config *config.Config) *App {
 		panic(err)
 	}
 
-	userService := user.New(log, config, pgStorage, pgStorage)
+	userService := user.New(log, config, pgStorage, pgStorage, redisStorage)
 	authService := auth.New(log, config, pgStorage, pgStorage, redisStorage)
 
 	httpApp := httpapp.New(log, config, userService, authService, authService, userService)

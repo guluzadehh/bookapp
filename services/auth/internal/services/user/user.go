@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/guluzadehh/bookapp/pkg/http/middlewares/requestidmdw"
 	"github.com/guluzadehh/bookapp/pkg/sl"
@@ -18,17 +19,23 @@ import (
 type UserStorage interface {
 	UserByEmailWithRole(ctx context.Context, email string) (*models.User, error)
 	CreateUser(ctx context.Context, email, password string, roleId int64) (*models.User, error)
+	DeleteUserByEmail(ctx context.Context, email string) error
 }
 
 type RoleProvider interface {
 	GetRoleByName(ctx context.Context, name string) (*models.Role, error)
 }
 
+type TokenBlacklist interface {
+	BlacklistUser(ctx context.Context, email string, expiry time.Duration) error
+}
+
 type UserService struct {
 	*services.Service
-	config       *config.Config
-	userStorage  UserStorage
-	roleProvider RoleProvider
+	config         *config.Config
+	userStorage    UserStorage
+	roleProvider   RoleProvider
+	tokenBlacklist TokenBlacklist
 }
 
 func New(
@@ -36,12 +43,14 @@ func New(
 	config *config.Config,
 	userStorage UserStorage,
 	roleProvider RoleProvider,
+	tokenBlacklist TokenBlacklist,
 ) *UserService {
 	return &UserService{
-		Service:      services.New(log),
-		config:       config,
-		userStorage:  userStorage,
-		roleProvider: roleProvider,
+		Service:        services.New(log),
+		config:         config,
+		userStorage:    userStorage,
+		roleProvider:   roleProvider,
+		tokenBlacklist: tokenBlacklist,
 	}
 }
 
