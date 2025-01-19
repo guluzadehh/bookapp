@@ -77,6 +77,28 @@ func (s *Storage) CreateUser(ctx context.Context, email, password string, roleId
 	return &user, nil
 }
 
+func (s *Storage) DeleteUserByEmail(ctx context.Context, email string) error {
+	const op = "storage.postgres.DeleteUserByEmail"
+
+	const query = `DELETE FROM users WHERE email = $1;`
+
+	res, err := s.db.ExecContext(ctx, query, email)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	if rowsAffected == 0 {
+		return storage.UserNotFound
+	}
+
+	return nil
+}
+
 func (s *Storage) UserByEmail(ctx context.Context, email string) (*models.User, error) {
 	const op = "storage.postgres.UserByEmail"
 
