@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/guluzadehh/bookapp/pkg/http/middlewares/requestidmdw"
 	"github.com/guluzadehh/bookapp/pkg/sl"
@@ -15,57 +16,42 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserSaver interface {
+type UserStorage interface {
+	UserByEmailWithRole(ctx context.Context, email string) (*models.User, error)
 	CreateUser(ctx context.Context, email, password string, roleId int64) (*models.User, error)
+	DeleteUserByEmail(ctx context.Context, email string) error
 }
 
 type RoleProvider interface {
 	GetRoleByName(ctx context.Context, name string) (*models.Role, error)
 }
 
+type TokenBlacklist interface {
+	BlacklistUser(ctx context.Context, email string, expiry time.Duration) error
+}
+
 type UserService struct {
 	*services.Service
-	config       *config.Config
-	userSaver    UserSaver
-	roleProvider RoleProvider
+	config         *config.Config
+	userStorage    UserStorage
+	roleProvider   RoleProvider
+	tokenBlacklist TokenBlacklist
 }
 
 func New(
 	log *slog.Logger,
 	config *config.Config,
-	userSaver UserSaver,
+	userStorage UserStorage,
 	roleProvider RoleProvider,
+	tokenBlacklist TokenBlacklist,
 ) *UserService {
 	return &UserService{
-		Service:      services.New(log),
-		config:       config,
-		userSaver:    userSaver,
-		roleProvider: roleProvider,
+		Service:        services.New(log),
+		config:         config,
+		userStorage:    userStorage,
+		roleProvider:   roleProvider,
+		tokenBlacklist: tokenBlacklist,
 	}
-}
-
-func (s *UserService) Signup(
-	ctx context.Context,
-	email, password string,
-) (*models.User, error) {
-	const op = "services.user.Signup"
-
-	log := s.Log.With(slog.String("op", op))
-
-	userRole, err := s.roleProvider.GetRoleByName(ctx, "user")
-	if err != nil {
-		log.Error("failed to get the user role", sl.Err(err))
-		return nil, services.ErrRoleNotFound
-	}
-
-	user, err := s.createUser(ctx, email, password, userRole.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	user.Role = userRole
-
-	return user, nil
 }
 
 func (s *UserService) createUser(
@@ -88,7 +74,7 @@ func (s *UserService) createUser(
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	user, err := s.userSaver.CreateUser(ctx, email, string(bytes), roleId)
+	user, err := s.userStorage.CreateUser(ctx, email, string(bytes), roleId)
 	if err != nil {
 		if errors.Is(err, storage.UserExists) {
 			log.Info("email is taken")

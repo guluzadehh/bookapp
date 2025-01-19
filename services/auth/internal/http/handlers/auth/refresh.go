@@ -4,9 +4,9 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"strings"
 
 	"github.com/guluzadehh/bookapp/pkg/http/api"
+	"github.com/guluzadehh/bookapp/pkg/http/httputils"
 	"github.com/guluzadehh/bookapp/pkg/http/middlewares/requestidmdw"
 	"github.com/guluzadehh/bookapp/pkg/sl"
 	"github.com/guluzadehh/bookapp/services/auth/internal/services"
@@ -35,16 +35,20 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 
 	refresh := cookie.Value
 
-	var oldAccess string
-
-	if authHeader := r.Header.Get("Authorization"); strings.HasPrefix(authHeader, "Bearer ") {
-		oldAccess = strings.TrimPrefix(authHeader, "Bearer ")
-	}
+	oldAccess, _ := httputils.BearerToken(r)
 
 	access, err := h.srvc.RefreshToken(r.Context(), refresh, oldAccess)
 	if err != nil {
 		if errors.Is(err, services.ErrInvalidToken) {
 			h.JSON(w, http.StatusUnauthorized, refreshInvalidResponse())
+			http.SetCookie(w, &http.Cookie{
+				Name:     h.config.JWT.Refresh.CookieName,
+				Value:    "",
+				SameSite: http.SameSiteNoneMode,
+				Path:     "/api/refresh",
+				HttpOnly: true,
+				MaxAge:   -1,
+			})
 			return
 		}
 

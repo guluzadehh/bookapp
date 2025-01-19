@@ -7,9 +7,11 @@ import (
 
 var (
 	ErrEmailExists        = errors.New("email is already taken")
+	ErrUserNotFound       = errors.New("user not found")
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrRoleNotFound       = errors.New("role doesn't exist")
 	ErrInvalidToken       = errors.New("invalid token")
+	ErrUnauthorized       = errors.New("unauthorized access")
 )
 
 type Service struct {

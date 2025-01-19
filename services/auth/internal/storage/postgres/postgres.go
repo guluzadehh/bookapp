@@ -77,6 +77,28 @@ func (s *Storage) CreateUser(ctx context.Context, email, password string, roleId
 	return &user, nil
 }
 
+func (s *Storage) DeleteUserByEmail(ctx context.Context, email string) error {
+	const op = "storage.postgres.DeleteUserByEmail"
+
+	const query = `DELETE FROM users WHERE email = $1;`
+
+	res, err := s.db.ExecContext(ctx, query, email)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	if rowsAffected == 0 {
+		return storage.UserNotFound
+	}
+
+	return nil
+}
+
 func (s *Storage) UserByEmail(ctx context.Context, email string) (*models.User, error) {
 	const op = "storage.postgres.UserByEmail"
 
@@ -96,6 +118,45 @@ func (s *Storage) UserByEmail(ctx context.Context, email string) (*models.User, 
 		&user.CreatedAt,
 		&user.UpdatedAt,
 		&user.IsActive,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, storage.UserNotFound
+		}
+
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &user, nil
+}
+
+func (s *Storage) UserByEmailWithRole(ctx context.Context, email string) (*models.User, error) {
+	const op = "storage.postgres.UserByEmailWithRole"
+
+	const query = `
+		SELECT 
+			users.id, users.email, users.password, users.role_id, users.created_at, users.updated_at, users.is_active, 
+			roles.id, roles.name, roles.created_at, roles.updated_at
+		FROM users
+		INNER JOIN roles ON roles.id = users.role_id
+		WHERE email = $1 AND is_active = true;
+	`
+
+	var user models.User
+	user.Role = &models.Role{}
+
+	err := s.db.QueryRowContext(ctx, query, email).Scan(
+		&user.Id,
+		&user.Email,
+		&user.Password,
+		&user.RoleId,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&user.IsActive,
+		&user.Role.Id,
+		&user.Role.Name,
+		&user.Role.CreatedAt,
+		&user.Role.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
